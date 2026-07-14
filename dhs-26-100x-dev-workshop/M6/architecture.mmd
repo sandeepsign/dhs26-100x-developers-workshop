@@ -1,0 +1,18 @@
+%% TaskFlow — architecture (C4 container view), Mermaid source.
+%% Paste into a Claude.ai Mermaid artifact, GitHub, or VS Code to render.
+flowchart TB
+  user(["Team member"])
+  subgraph clients [Clients]
+    direction LR
+    web["Web app<br/>board UI · Replit"]
+    mobile["Mobile app<br/>Expo / React Native"]
+  end
+  api["TaskFlow API<br/>Node · Express"]
+  db[("Replit DB<br/>tasks")]
+  notify["Notifications<br/>microservice"]
+  user --> web
+  user --> mobile
+  web -->|REST| api
+  mobile -->|REST| api
+  api --> db
+  api -->|POST /notify| notify

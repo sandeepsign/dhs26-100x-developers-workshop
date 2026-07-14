@@ -1,0 +1,25 @@
+' TaskFlow — C4 Container diagram (PlantUML, C4-PlantUML).
+' Render at plantuml.com/plantuml, the PlantUML VS Code extension, or with Structurizr.
+' Needs the C4-PlantUML include below (fetched by the PlantUML server).
+@startuml TaskFlow-Containers
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+title TaskFlow — Container view (C4)
+
+Person(user, "Team member", "Creates and tracks tasks")
+
+System_Boundary(taskflow, "TaskFlow") {
+  Container(web, "Web app", "HTML/CSS/JS on Replit", "The board UI")
+  Container(mobile, "Mobile app", "React Native / Expo", "List + add on a phone")
+  Container(api, "TaskFlow API", "Node · Express", "REST endpoints, validation, rules")
+  ContainerDb(db, "Replit DB", "Key-value store", "Tasks, keyed task:<id>")
+  Container(notify, "Notifications", "Node · Express", "Sends a notice on task change")
+}
+
+Rel(user, web, "Uses", "HTTPS")
+Rel(user, mobile, "Uses")
+Rel(web, api, "Calls", "REST/JSON")
+Rel(mobile, api, "Calls", "REST/JSON")
+Rel(api, db, "Reads/writes tasks")
+Rel(api, notify, "Notifies", "POST /notify")
+@enduml

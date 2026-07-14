@@ -1,0 +1,51 @@
+# Reference CI pipeline for TaskFlow — Build #6
+# Copy to .github/workflows/ci.yml in your repo.
+# Runs on every pull request: lint + tests (quality job), then a headless AI review.
+#
+# One-time setup:
+#   1) Install the GitHub App:  run `/install-github-app` in Claude Code
+#      (or install https://github.com/apps/claude and add the secret manually)
+#   2) Add the API key secret:  gh secret set ANTHROPIC_API_KEY
+#      (Settings → Secrets and variables → Actions → name it exactly ANTHROPIC_API_KEY)
+
+name: CI
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  quality:
+    name: Lint & test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm test
+
+  ai-review:
+    name: AI review
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write   # allow the reviewer to post inline comments
+      id-token: write
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+      - uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: >
+            Review this pull request for logic errors, unhandled edge cases,
+            security issues, and any changed behaviour that lacks a test.
+            Flag findings by severity and cite file:line. Do not comment on
+            style — the linter owns that.
+          # Optional tuning:
+          # claude_args: "--max-turns 6 --model claude-sonnet-5"
